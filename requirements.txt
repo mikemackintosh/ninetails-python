@@ -1,1 +1,1 @@
-tailer=*
+tailer==0.3
