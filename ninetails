@@ -5,10 +5,10 @@ import re
 import tailer
 
 colors = {
-    'RED':  ['sudo'],
+    'RED':  ['sudo', 'kernel'],
     'ORANGE': ['login'],
     'GREEN':  ['py', 'php', 'launch'],
-    'BABYBLUE':  ['discovery']
+    'BABYBLUE':  ['discoveryd']
 }
 
 class text:
@@ -30,16 +30,13 @@ class text:
 
 try:
     for line in tailer.follow(open(argv[1])):
-
         message = "%s%s" % (text.DARKGREY, line)
-
         for color in colors: 
-            for match in color:
-                if re.search("(%s)" % match, line, re.MULTILINE):
-                   message = "%s%s" % (getattr(text, color), line)
+            for match in colors[color]:
+                if re.match(".*(%s).*" % match, line):
+                    message = "%s%s" % (getattr(text, color), line)
 
         print message
-        
 
 except KeyboardInterrupt, e:
     pass
