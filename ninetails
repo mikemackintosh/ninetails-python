@@ -1,5 +1,45 @@
 #!/usr/bin/env python
+from sys import argv
+import re
+
 import tailer
 
-for line in tailer.follow(open(ARGV[1])):
-    print line
+colors = {
+    'RED':  ['sudo'],
+    'ORANGE': ['login'],
+    'GREEN':  ['py', 'php', 'launch'],
+    'BABYBLUE':  ['discovery']
+}
+
+class text:
+
+    PURPLE="\033[38;5;129m"
+    PINK="\033[38;5;162m"
+    RED="\033[38;5;196m"
+    ORANGE = '\033[38;5;208m'
+    YELLOW='\033[38;5;184m'
+    GREEN="\033[38;5;154m"
+    BLUE='\033[38;5;32m'
+    GREY="\033[38;5;242m"
+    DARKGREY="\033[38;5;239m"
+    LIGHTGREY="\033[38;5;249m"
+    BABYBLUE='\033[38;5;123m'
+    LIGHTPINK='\033[38;5;212m'
+    WHITE="\033[38;5;7m"
+    CLEAR="\033(B\033[m" #$(tput sgr0)
+
+try:
+    for line in tailer.follow(open(argv[1])):
+
+        message = "%s%s" % (text.DARKGREY, line)
+
+        for color in colors: 
+            for match in color:
+                if re.search("(%s)" % match, line, re.MULTILINE):
+                   message = "%s%s" % (getattr(text, color), line)
+
+        print message
+        
+
+except KeyboardInterrupt, e:
+    pass
