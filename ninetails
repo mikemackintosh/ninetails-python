@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 from sys import argv
 import re
+import argparse
 
 import tailer
 
+show_last_lines = False
+
 colors = {
-    'RED':  ['sudo', 'kernel'],
+    'RED':  ['sudo', 'kernel', '500'],
     'ORANGE': ['login'],
-    'GREEN':  ['py', 'php', 'launch'],
+    'YELLOW': ['404'],
+    'GREEN':  ['py', 'php', 'launch', '200'],
     'BABYBLUE':  ['discoveryd']
 }
+
+parser = argparse.ArgumentParser(description='Ninetails is a log monitoring solution')
 
 class text:
 
@@ -29,6 +35,18 @@ class text:
     CLEAR="\033(B\033[m" #$(tput sgr0)
 
 try:
+    if show_last_lines:
+        print text.WHITE,"---- Nine Tails attacked with Tail Whip ----", text.CLEAR
+        for line in tailer.tail(open(argv[1]), 10):
+            message = "%s%s" % (text.DARKGREY, line)
+            for color in colors: 
+                for match in colors[color]:
+                    if re.match(".*(%s).*" % match, line):
+                        message = "%s%s" % (getattr(text, color), line)
+
+            print message
+        print text.WHITE,"---- Tail Whip Finished ----", text.CLEAR
+
     for line in tailer.follow(open(argv[1])):
         message = "%s%s" % (text.DARKGREY, line)
         for color in colors: 
