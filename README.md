@@ -8,6 +8,22 @@ An output filtering extension for log files, and can be modified for a lot of th
 ## Usage
 -------------
 
+Ninetails works simple out of the box. Just run:
+
+    ninetails /log/file
+
+It will automagically start working!
+
+If you would like to tail the end of the file, you can pass an argument like:
+
+    ninetails -t /log/file
+
+or
+
+    ninetails -t200 /log/file
+
+## Syntax Coloring
+
 You can create a python dictionary like so:
 
     colors = {
@@ -16,7 +32,6 @@ You can create a python dictionary like so:
         'GREEN':  ['py', 'php', 'launch'],
         'BABYBLUE':  ['discoveryd']
     }
-    
 
 ## Screenshot
 -------------

@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(
 
 # Set Arguments
 parser.add_argument('file', nargs='?', help='file to watch')
-parser.add_argument('-t', help='Tail log', action="store_false")
+parser.add_argument('-t', '--tail', nargs='?', const=10, type=int, help="tail log")
 parser.add_argument('-e', help='Highlight only matched text rather than line', action="store_false")
 args = parser.parse_args()
 
@@ -48,9 +48,9 @@ class text:
     CLEAR="\033(B\033[m" #$(tput sgr0)
 
 try:
-    if args.t is not False:
+    if args.tail is not None:
         print text.WHITE,"---- Nine Tails attacked with Tail Whip ----", text.CLEAR
-        for line in tailer.tail(open(args.file), 10):
+        for line in tailer.tail(open(args.file), args.tail):
             message = "%s%s" % (text.DARKGREY, line)
             for color in colors: 
                 for match in colors[color]:
