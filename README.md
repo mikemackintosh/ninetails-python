@@ -22,6 +22,10 @@ or
 
     ninetails -t200 /log/file
 
+If you enable exact matching with the `-e` flag, you can create a REGEX filter to match text.
+
+![Screenshot](https://www.dropbox.com/s/0c3ze12ovjpttnp/Screenshot%202014-10-27%2010.11.49.png?dl=1)
+    
 ## Syntax Coloring
 
 You can create a python dictionary like so:
