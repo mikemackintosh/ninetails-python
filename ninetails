@@ -2,20 +2,33 @@
 from sys import argv
 import re
 import argparse
-
 import tailer
 
-show_last_lines = False
-
+# Default, because
 colors = {
-    'RED':  ['sudo', 'kernel', '500'],
-    'ORANGE': ['login'],
-    'YELLOW': ['404'],
-    'GREEN':  ['py', 'php', 'launch', '200'],
-    'BABYBLUE':  ['discoveryd']
+    'RED':  ['ERROR', 'kernel', '500'],
+    'ORANGE': ['WARNING'],
+    'YELLOW': ['404', '403'],
+    'GREEN':  ['200', 'OK'],
+    'BABYBLUE':  ['INFO']
 }
 
-parser = argparse.ArgumentParser(description='Ninetails is a log monitoring solution')
+# Argument Parser
+parser = argparse.ArgumentParser(
+                prog="ninetails", 
+                description="ninetails is a log monitoring tool that helps you read and understand logs")
+
+# Set Arguments
+parser.add_argument('file', nargs='?', help='file to watch')
+parser.add_argument('-t', help='Tail log', action="store_false")
+parser.add_argument('-e', help='Highlight only matched text rather than line', action="store_false")
+args = parser.parse_args()
+
+#print args
+
+if args.file is None:
+    parser.print_help()
+    exit()
 
 class text:
 
@@ -35,9 +48,9 @@ class text:
     CLEAR="\033(B\033[m" #$(tput sgr0)
 
 try:
-    if show_last_lines:
+    if args.t is not False:
         print text.WHITE,"---- Nine Tails attacked with Tail Whip ----", text.CLEAR
-        for line in tailer.tail(open(argv[1]), 10):
+        for line in tailer.tail(open(args.file), 10):
             message = "%s%s" % (text.DARKGREY, line)
             for color in colors: 
                 for match in colors[color]:
@@ -47,7 +60,7 @@ try:
             print message
         print text.WHITE,"---- Tail Whip Finished ----", text.CLEAR
 
-    for line in tailer.follow(open(argv[1])):
+    for line in tailer.follow(open(args.file)):
         message = "%s%s" % (text.DARKGREY, line)
         for color in colors: 
             for match in colors[color]:
