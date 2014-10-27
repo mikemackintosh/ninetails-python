@@ -8,10 +8,9 @@ import sys
 # Default, because
 colors = {
     'RED':  ['ERROR', '(kernel.*?)\:', '500'],
-    'ORANGE': ['WARNING'],
+    'ORANGE': ['(\'.*?\')'],
     'YELLOW': ['404', '403'],
-    'GREEN':  ['200', 'OK'],
-    'BABYBLUE':  ['INFO']
+    'GREEN':  ['Succeeded authorizing'],
 }
 
 # Adding a context manager to silence stupid shortcoming of argparse
@@ -28,17 +27,16 @@ def nostderr():
         sys.stderr = savestderr
 
 def highlight_line(line):
-    message = "%s%s" % (text.DARKGREY, line)
     for color in colors: 
         for match in colors[color]:
-            m = re.search(".*(%s).*" % match, line)
+            m = re.search(".*(%s).*" % match, line, flags=re.IGNORECASE)
             if m is not None:
-                message = "%s%s" % (getattr(text, color), line)
-
                 if args.exact:
-                    if len(m.groups()) > 1:
-                        message = re.sub(match, "%s\\1%s" % (getattr(text, color), text.DARKGREY), line)
-    print message
+                    line = re.sub('(%s)' % match, "%s\\1%s" % (getattr(text, color), text.DARKGREY), line, flags=re.IGNORECASE)
+                else:
+                    line = "%s%s" % (getattr(text, color), line)
+    
+    print "%s%s" % (text.DARKGREY, line)
 
 # if main
 if __name__ == "__main__":
