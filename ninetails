@@ -1,73 +1,94 @@
 #!/usr/bin/env python
-from sys import argv
 import re
 import argparse
 import tailer
+import contextlib
+import sys
 
 # Default, because
 colors = {
-    'RED':  ['ERROR', 'kernel', '500'],
+    'RED':  ['ERROR', '(kernel.*?)\:', '500'],
     'ORANGE': ['WARNING'],
     'YELLOW': ['404', '403'],
     'GREEN':  ['200', 'OK'],
     'BABYBLUE':  ['INFO']
 }
 
-# Argument Parser
-parser = argparse.ArgumentParser(
-                prog="ninetails", 
-                description="ninetails is a log monitoring tool that helps you read and understand logs")
+# Adding a context manager to silence stupid shortcoming of argparse
+# Or maybe im just a googling n00b. Who know's.
+@contextlib.contextmanager
+def nostderr():
+    savestderr = sys.stderr
+    class Devnull(object):
+        def write(self, _): pass
+    sys.stderr = Devnull()
+    try:
+        yield
+    finally:
+        sys.stderr = savestderr
 
-# Set Arguments
-parser.add_argument('file', nargs='?', help='file to watch')
-parser.add_argument('-t', '--tail', nargs='?', const=10, type=int, help="tail log")
-parser.add_argument('-e', help='Highlight only matched text rather than line', action="store_false")
-args = parser.parse_args()
+def highlight_line(line):
+    message = "%s%s" % (text.DARKGREY, line)
+    for color in colors: 
+        for match in colors[color]:
+            m = re.search(".*(%s).*" % match, line)
+            if m is not None:
+                message = "%s%s" % (getattr(text, color), line)
 
-#print args
+                if args.exact:
+                    if len(m.groups()) > 1:
+                        message = re.sub(match, "%s\\1%s" % (getattr(text, color), text.DARKGREY), line)
+    print message
 
-if args.file is None:
-    parser.print_help()
-    exit()
+# if main
+if __name__ == "__main__":
+    # Argument Parser
+    parser = argparse.ArgumentParser(
+                    prog="ninetails", 
+                    description="ninetails is a log monitoring tool that helps you read and understand logs")
 
-class text:
+    # Set Arguments
+    parser.add_argument('-t', '--tail', nargs='?', type=int, help="tail log")
+    parser.add_argument('-e', '--exact', help='Highlight only matched text rather than line', default=False, action="store_true")
+    parser.add_argument('file', nargs='?', help='file to watch')
 
-    PURPLE="\033[38;5;129m"
-    PINK="\033[38;5;162m"
-    RED="\033[38;5;196m"
-    ORANGE = '\033[38;5;208m'
-    YELLOW='\033[38;5;184m'
-    GREEN="\033[38;5;154m"
-    BLUE='\033[38;5;32m'
-    GREY="\033[38;5;242m"
-    DARKGREY="\033[38;5;239m"
-    LIGHTGREY="\033[38;5;249m"
-    BABYBLUE='\033[38;5;123m'
-    LIGHTPINK='\033[38;5;212m'
-    WHITE="\033[38;5;7m"
-    CLEAR="\033(B\033[m" #$(tput sgr0)
+    with nostderr():
+        try:
+            args = parser.parse_args() 
+        except:
+            args = parser.parse_args((' '.join(sys.argv[1:]).replace('-t', '-t10')).split())
 
-try:
-    if args.tail is not None:
-        print text.WHITE,"---- Nine Tails attacked with Tail Whip ----", text.CLEAR
-        for line in tailer.tail(open(args.file), args.tail):
-            message = "%s%s" % (text.DARKGREY, line)
-            for color in colors: 
-                for match in colors[color]:
-                    if re.match(".*(%s).*" % match, line):
-                        message = "%s%s" % (getattr(text, color), line)
+    if args.file is None:
+        parser.print_help()
+        exit()
 
-            print message
-        print text.WHITE,"---- Tail Whip Finished ----", text.CLEAR
+    class text:
 
-    for line in tailer.follow(open(args.file)):
-        message = "%s%s" % (text.DARKGREY, line)
-        for color in colors: 
-            for match in colors[color]:
-                if re.match(".*(%s).*" % match, line):
-                    message = "%s%s" % (getattr(text, color), line)
+        PURPLE="\033[38;5;129m"
+        PINK="\033[38;5;162m"
+        RED="\033[38;5;196m"
+        ORANGE = '\033[38;5;208m'
+        YELLOW='\033[38;5;184m'
+        GREEN="\033[38;5;154m"
+        BLUE='\033[38;5;32m'
+        GREY="\033[38;5;242m"
+        DARKGREY="\033[38;5;239m"
+        LIGHTGREY="\033[38;5;249m"
+        BABYBLUE='\033[38;5;123m'
+        LIGHTPINK='\033[38;5;212m'
+        WHITE="\033[38;5;7m"
+        CLEAR="\033(B\033[m" #$(tput sgr0)
 
-        print message
+    try:
+        if args.tail is not None:
+            print text.WHITE,"---- Nine Tails attacked with Tail Whip ----", text.CLEAR
+            for line in tailer.tail(open(args.file), args.tail):
+                highlight_line( line )
 
-except KeyboardInterrupt, e:
-    pass
+            print text.WHITE,"---- Tail Whip Finished ----", text.CLEAR
+
+        for line in tailer.follow(open(args.file)):
+            highlight_line( line )
+
+    except KeyboardInterrupt, e:
+        pass
